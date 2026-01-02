@@ -487,7 +487,8 @@
 
                 <option value="vip_dezembro" data-price="25.00" data-kind="vip" data-name="VIP Exclusivo — Dezembro">VIP Exclusivo — Dezembro (€25.00)</option>
 
-                <option value="extra_galinha" data-price="5.99" data-kind="oneshot" data-name="Extra — Galinha VIP">Extra — Galinha VIP (€5.99)</option>
+                <option value="extra_galinha" data-price="5.99" data-kind="limited" data-name="Extra — Galinha VIP">Extra — Galinha VIP (€50.00)</option>
+
               </select>
             </div>
 
@@ -696,18 +697,21 @@
     }
 
     function enforceQtyRules(){
-      const opt = productSel.selectedOptions[0];
-      const kind = opt ? (opt.dataset.kind || "oneshot") : "oneshot";
+  const opt = productSel.selectedOptions[0];
+  const kind = opt ? (opt.dataset.kind || "oneshot") : "oneshot";
 
-      if (kind === "vip"){
-        qtyInp.value = "1";
-        qtyInp.setAttribute("disabled", "disabled");
-        qtyHint.textContent = "Este tipo de produto é sempre 1 (VIP).";
-      } else {
-        qtyInp.removeAttribute("disabled");
-        qtyHint.textContent = "Podes comprar mais do que 1 (coins/extras).";
-      }
-    }
+  // VIP + LIMITED = só pode 1
+  if (kind === "vip" || kind === "limited"){
+    qtyInp.value = "1";
+    qtyInp.setAttribute("disabled", "disabled");
+    qtyHint.textContent = "Este produto só pode ser comprado 1 vez por compra.";
+  } else {
+    // coins (oneshot normal) = pode escolher quantidade
+    qtyInp.removeAttribute("disabled");
+    qtyHint.textContent = "Podes comprar mais do que 1 (coins).";
+  }
+}
+
 
     function updateSummary(){
       const opt = productSel.selectedOptions[0];
@@ -921,9 +925,26 @@
       });
     });
 
-    // Init
-    onProductChange();
-    setMethod(method);
+function preselectFromUrl(){
+  const params = new URLSearchParams(window.location.search);
+  const item = params.get("item");
+
+  if (!item) return;
+
+  // Se existir no select, seleciona
+  const exists = [...productSel.options].some(o => o.value === item);
+  if (exists){
+    productSel.value = item;
+  }
+}
+
+// Init
+preselectFromUrl();   // ✅ vai buscar o item vindo do vips.html
+onProductChange();
+setMethod(method);
+
+
+
   </script>
 </body>
 </html>
